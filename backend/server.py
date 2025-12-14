@@ -567,6 +567,133 @@ async def get_weekly_report(start_date: str, end_date: str, current_user: dict =
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@api_router.get("/reports/worker-performance")
+async def get_worker_performance(worker_id: str, start_date: str, end_date: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Yetkiniz yok")
+    
+    try:
+        start = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
+        end = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, microsecond=999999)
+        
+        # Worker bilgisi
+        worker = await db.users.find_one({"id": worker_id}, {"_id": 0, "password_hash": 0})
+        if not worker:
+            raise HTTPException(status_code=404, detail="Eleman bulunamadı")
+        
+        # Worker'ın tüm logları
+        logs = await db.work_logs.find({
+            "worker_id": worker_id,
+            "timestamp": {
+                "$gte": start.isoformat(),
+                "$lte": end.isoformat()
+            }
+        }, {"_id": 0}).to_list(10000)
+        
+        # Toplam üretim
+        total_production = sum([log.get("quantity_completed", 0) for log in logs if log.get("quantity_completed")])
+        
+        # Süreleri hesapla
+        prep_time = 0  # Ön hazırlık süresi (dakika)
+        work_time = 0  # Üretim süresi (dakika)
+        pause_times = {
+            "break": 0,
+            "failure": 0,
+            "material_shortage": 0,
+            "toilet": 0,
+            "prayer": 0,
+            "meal": 0
+        }  # Mola süreleri (dakika)
+        
+        # Task bazlı hesaplama
+        tasks = await db.tasks.find({
+            "current_worker_id": worker_id
+        }, {"_id": 0}).to_list(1000)
+        
+        for task in tasks:
+            task_logs = [log for log in logs if log["task_id"] == task["id"]]
+            task_logs.sort(key=lambda x: x["timestamp"])
+            
+            i = 0
+            while i < len(task_logs):
+                log = task_logs[i]
+                
+                if log["event_type"] == "prep_start" and i + 1 < len(task_logs):
+                    next_log = task_logs[i + 1]
+                    if next_log["event_type"] == "prep_end":
+                        t1 = datetime.fromisoformat(log["timestamp"])
+                        t2 = datetime.fromisoformat(next_log["timestamp"])
+                        prep_time += (t2 - t1).total_seconds() / 60
+                        i += 2
+                        continue
+                
+                elif log["event_type"] == "work_start" or log["event_type"] == "work_resume":
+                    if i + 1 < len(task_logs):
+                        next_log = task_logs[i + 1]
+                        if next_log["event_type"] in ["work_pause", "work_complete"]:
+                            t1 = datetime.fromisoformat(log["timestamp"])
+                            t2 = datetime.fromisoformat(next_log["timestamp"])
+                            work_time += (t2 - t1).total_seconds() / 60
+                            i += 2
+                            continue
+                
+                elif log["event_type"] == "work_pause":
+                    if i + 1 < len(task_logs):
+                        next_log = task_logs[i + 1]
+                        if next_log["event_type"] == "work_resume":
+                            t1 = datetime.fromisoformat(log["timestamp"])
+                            t2 = datetime.fromisoformat(next_log["timestamp"])
+                            pause_duration = (t2 - t1).total_seconds() / 60
+                            reason = log.get("pause_reason", "break")
+                            if reason in pause_times:
+                                pause_times[reason] += pause_duration
+                            i += 2
+                            continue
+                
+                i += 1
+        
+        # Toplam çalışma süresi
+        total_work_time = prep_time + work_time
+        total_pause_time = sum(pause_times.values())
+        
+        # Günlük bazda dağılım
+        daily_breakdown = {}
+        for log in logs:
+            log_date = datetime.fromisoformat(log["timestamp"]).date().isoformat()
+            if log_date not in daily_breakdown:
+                daily_breakdown[log_date] = {
+                    "date": log_date,
+                    "prep_time": 0,
+                    "work_time": 0,
+                    "pause_time": 0,
+                    "production": 0
+                }
+        
+        return {
+            "worker": worker,
+            "start_date": start_date,
+            "end_date": end_date,
+            "summary": {
+                "total_production": total_production,
+                "total_prep_time_minutes": round(prep_time, 2),
+                "total_work_time_minutes": round(work_time, 2),
+                "total_work_time_hours": round(total_work_time / 60, 2),
+                "total_pause_time_minutes": round(total_pause_time, 2),
+                "total_pause_time_hours": round(total_pause_time / 60, 2),
+                "pause_breakdown": {
+                    "break_minutes": round(pause_times["break"], 2),
+                    "failure_minutes": round(pause_times["failure"], 2),
+                    "material_shortage_minutes": round(pause_times["material_shortage"], 2),
+                    "toilet_minutes": round(pause_times["toilet"], 2),
+                    "prayer_minutes": round(pause_times["prayer"], 2),
+                    "meal_minutes": round(pause_times["meal"], 2)
+                }
+            },
+            "logs": logs
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @api_router.post("/init-data")
 async def initialize_data():
     existing_admin = await db.users.find_one({"role": "admin"})
