@@ -1,22 +1,172 @@
 {
   "summary": {
-    "total_tests": 2,
-    "passed_tests": 1,
-    "success_rate": 50.0,
-    "timestamp": "2025-12-14T15:17:46.960509"
+    "total_tests": 27,
+    "passed_tests": 26,
+    "success_rate": 96.29629629629629,
+    "timestamp": "2025-12-14T15:20:32.786480"
   },
   "detailed_results": [
     {
       "test": "Initialize demo data",
       "success": true,
       "details": "Status: 200",
-      "timestamp": "2025-12-14T15:17:46.695581"
+      "timestamp": "2025-12-14T15:20:30.200653"
     },
     {
       "test": "Admin login",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:30.466880"
+    },
+    {
+      "test": "Supervisor login",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:30.724750"
+    },
+    {
+      "test": "Worker login",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:30.992838"
+    },
+    {
+      "test": "Invalid login rejection",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.048513"
+    },
+    {
+      "test": "Get all users",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.128519"
+    },
+    {
+      "test": "Create new user",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.396792"
+    },
+    {
+      "test": "Update user password",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.666682"
+    },
+    {
+      "test": "Delete user",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.707284"
+    },
+    {
+      "test": "Unauthorized user access blocked",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.746813"
+    },
+    {
+      "test": "Get all machines",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.788507"
+    },
+    {
+      "test": "Create new machine",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.828713"
+    },
+    {
+      "test": "Update machine",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.874416"
+    },
+    {
+      "test": "Duplicate machine code rejected",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.913150"
+    },
+    {
+      "test": "Unauthorized machine creation blocked",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.953929"
+    },
+    {
+      "test": "Get all work orders",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:31.992628"
+    },
+    {
+      "test": "Create work order (admin)",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.034189"
+    },
+    {
+      "test": "Create work order (supervisor)",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.072325"
+    },
+    {
+      "test": "Unauthorized work order creation blocked",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.113723"
+    },
+    {
+      "test": "Get all tasks",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.152655"
+    },
+    {
+      "test": "Create task (assign to machine)",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.212594"
+    },
+    {
+      "test": "Assign worker to task",
       "success": false,
-      "details": "Status: 401",
-      "timestamp": "2025-12-14T15:17:46.960228"
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.333494"
+    },
+    {
+      "test": "Unauthorized task creation blocked",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.375128"
+    },
+    {
+      "test": "Get worker tasks",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.510955"
+    },
+    {
+      "test": "Get live monitoring data",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.553293"
+    },
+    {
+      "test": "Get daily report",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.589815"
+    },
+    {
+      "test": "Unauthorized report access blocked",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-12-14T15:20:32.626989"
     }
   ]
 }
