@@ -6,29 +6,84 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 const COLORS = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function Reports({ token }) {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedStartDate, setSelectedStartDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString().split('T')[0];
+  });
+  const [selectedEndDate, setSelectedEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleFetchReport = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/reports/daily?date=${selectedDate}`, {
+      const response = await axios.get(`${API_URL}/reports/weekly?start_date=${selectedStartDate}&end_date=${selectedEndDate}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReportData(response.data);
-      toast.success('Rapor yüklendi');
+      toast.success('Haftalık rapor yüklendi');
     } catch (error) {
       toast.error('Rapor yüklenemedi');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportExcel = () => {
+    if (!reportData) {
+      toast.error('Önce rapor oluşturun');
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    
+    const summaryData = [
+      ['FETHMES - Haftalık Üretim Raporu', ''],
+      ['Tarih Aralığı', `${selectedStartDate} - ${selectedEndDate}`],
+      ['', ''],
+      ['Toplam Olay Sayısı', reportData.total_logs],
+      ['Toplam Üretim (Adet)', reportData.total_production],
+      ['', ''],
+      ['Mola Sebepleri', 'Sayı']
+    ];
+
+    Object.entries(reportData.pause_reasons || {}).forEach(([key, value]) => {
+      const label = {
+        break: 'Mola',
+        failure: 'Arıza',
+        material_shortage: 'Ham Madde Eksikliği',
+        toilet: 'Tuvalet',
+        prayer: 'Namaz',
+        meal: 'Yemek'
+      }[key] || key;
+      summaryData.push([label, value]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Özet');
+
+    if (reportData.logs && reportData.logs.length > 0) {
+      const logsData = reportData.logs.map(log => ({
+        'Tarih': new Date(log.timestamp).toLocaleString('tr-TR'),
+        'Olay Tipi': log.event_type,
+        'Duruş Sebebi': log.pause_reason || '-',
+        'Üretilen Adet': log.quantity_completed || '-'
+      }));
+      const wsLogs = XLSX.utils.json_to_sheet(logsData);
+      XLSX.utils.book_append_sheet(wb, wsLogs, 'Detaylar');
+    }
+
+    XLSX.writeFile(wb, `Fethmes_Haftalik_Rapor_${selectedStartDate}_${selectedEndDate}.xlsx`);
+    toast.success('Excel dosyası indirildi');
   };
 
   const pauseReasonsData = reportData ? Object.entries(reportData.pause_reasons).map(([key, value]) => ({
