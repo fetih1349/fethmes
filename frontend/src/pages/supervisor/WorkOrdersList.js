@@ -84,39 +84,59 @@ export default function WorkOrdersList({ token, user }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {workOrders.map((order) => (
-          <Card key={order.id} data-testid={`work-order-${order.order_no}`} className="bg-card/50 backdrop-blur-md border-white/5">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{order.part_name}</CardTitle>
-                  <p className="font-mono text-sm text-muted-foreground mt-1">{order.order_no}</p>
+        {workOrders.map((order) => {
+          const orderTasks = tasks.filter(t => t.work_order_id === order.id);
+          
+          return (
+            <Card key={order.id} data-testid={`work-order-${order.order_no}`} className="bg-card/50 backdrop-blur-md border-white/5">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">{order.part_name}</CardTitle>
+                    <p className="font-mono text-sm text-muted-foreground mt-1">{order.order_no}</p>
+                  </div>
+                  {getStatusBadge(order.status)}
                 </div>
-                {getStatusBadge(order.status)}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Adet:</span>
-                <span className="font-mono font-bold text-lg">{order.quantity}</span>
-              </div>
-              {order.description && (
-                <p className="text-sm text-muted-foreground pt-2 border-t border-border">{order.description}</p>
-              )}
-              <Dialog open={dialogOpen && selectedOrder?.id === order.id} onOpenChange={(open) => {
-                setDialogOpen(open);
-                if (!open) setSelectedOrder(null);
-              }}>
-                <DialogTrigger asChild>
-                  <Button 
-                    className="w-full gap-2 neon-glow-primary" 
-                    data-testid={`assign-task-${order.order_no}`}
-                    onClick={() => setSelectedOrder(order)}
-                  >
-                    Makineye Ata
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </DialogTrigger>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Adet:</span>
+                  <span className="font-mono font-bold text-lg">{order.quantity}</span>
+                </div>
+                
+                {/* Atanan makineleri göster */}
+                {orderTasks.length > 0 && (
+                  <div className="pt-2 border-t border-border space-y-2">
+                    <p className="text-xs text-muted-foreground font-semibold">ATANAN MAKİNELER:</p>
+                    {orderTasks.map((task) => {
+                      const machine = machines.find(m => m.id === task.machine_id);
+                      return machine && (
+                        <div key={task.id} className="p-2 bg-primary/10 border border-primary/30 rounded-md">
+                          <p className="font-bold text-primary">{machine.name}</p>
+                          <p className="text-xs text-muted-foreground">Adet: {task.quantity_assigned}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {order.description && (
+                  <p className="text-sm text-muted-foreground pt-2 border-t border-border">{order.description}</p>
+                )}
+                <Dialog open={dialogOpen && selectedOrder?.id === order.id} onOpenChange={(open) => {
+                  setDialogOpen(open);
+                  if (!open) setSelectedOrder(null);
+                }}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      className="w-full gap-2 neon-glow-primary" 
+                      data-testid={`assign-task-${order.order_no}`}
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      Makineye Ata
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="bg-card border-border">
                   <DialogHeader>
                     <DialogTitle>Görev Ata - {order.part_name}</DialogTitle>
