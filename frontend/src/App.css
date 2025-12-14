@@ -1,34 +1,40 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+.grid-background {
+  background-image: 
+    linear-gradient(to right, rgba(128, 128, 128, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(128, 128, 128, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.status-dot-running {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.status-dot-stopped {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
 }
 
-.App-link {
-    color: #61dafb;
+.status-dot-pause {
+  background-color: #eab308;
+  box-shadow: 0 0 8px #eab308;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.status-dot-idle {
+  background-color: #64748b;
+  box-shadow: 0 0 8px #64748b;
+}
+
+.glass-card {
+  backdrop-filter: blur(24px);
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.neon-glow-primary {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.neon-glow-destructive {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
