@@ -151,10 +151,11 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         task_id: selectedTask.id,
         event_type: 'prep_end'
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Ön hazırlık tamamlandı');
+      toast.success('Ön hazırlık tamamlandı - Üretime başlayabilirsiniz');
+      setSelectedTask({...selectedTask, status: 'preparation'});
       setElapsedTime(0);
       setStartTime(null);
-      checkActiveTask();
+      setTimeout(() => checkActiveTask(), 500);
     } catch (error) {
       toast.error('Tamamlanamadı');
     }
