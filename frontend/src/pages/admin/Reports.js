@@ -337,9 +337,10 @@ export default function Reports({ token }) {
         </CardContent>
       </Card>
 
+      {/* Genel Haftalık Rapor */}
       <Card className="bg-card/50 backdrop-blur-md border-white/5">
         <CardHeader>
-          <CardTitle>Haftalık Rapor</CardTitle>
+          <CardTitle>Genel Haftalık Rapor</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
