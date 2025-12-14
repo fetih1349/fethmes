@@ -97,6 +97,8 @@ export default function WorkerDashboard({ user, token, onLogout }) {
     }
   };
 
+  const [availableTasks, setAvailableTasks] = useState([]);
+
   const handleSelectMachine = async (machine) => {
     try {
       const [tasksRes, ordersRes] = await Promise.all([
@@ -115,12 +117,10 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         return;
       }
       
-      const task = machineTasks[0];
-      const wo = ordersRes.data.find(w => w.id === task.work_order_id);
-      
+      // Tüm işleri kaydet
       setSelectedMachine(machine);
-      setSelectedTask(task);
-      setWorkOrder(wo);
+      setAvailableTasks(machineTasks);
+      setWorkOrder(ordersRes.data);
     } catch (error) {
       toast.error('İş yüklenemedi');
     }
