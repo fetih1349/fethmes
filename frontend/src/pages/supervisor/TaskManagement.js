@@ -129,14 +129,15 @@ export default function TaskManagement({ token, user }) {
                   <p className="font-bold text-lg text-primary">{machine?.name}</p>
                   <p className="font-mono text-sm text-muted-foreground mt-1">Kod: {machine?.code}</p>
                 </div>
-                <div className="p-3 bg-accent/50 border border-border rounded-md">
-                  <p className="text-xs text-muted-foreground mb-1">Eleman</p>
-                  {worker ? (
-                    <p className="font-semibold text-sm">{worker.full_name}</p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">Henüz atanmadı</p>
-                  )}
-                </div>
+                {task.current_worker_id && (() => {
+                  const currentWorker = workers.find(w => w.id === task.current_worker_id);
+                  return currentWorker && (
+                    <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-md">
+                      <p className="text-xs text-green-400 mb-1 font-semibold">AKTİF ÇALIŞAN</p>
+                      <p className="font-bold text-lg text-green-400">{currentWorker.full_name}</p>
+                    </div>
+                  );
+                })()}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Durum:</span>
                   {getStatusBadge(task.status)}
