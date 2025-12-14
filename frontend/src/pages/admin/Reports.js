@@ -102,7 +102,7 @@ export default function Reports({ token }) {
     <div className="space-y-6" data-testid="reports-page">
       <div>
         <h1 className="text-4xl font-black tracking-tight">Raporlar</h1>
-        <p className="text-muted-foreground mt-1">Günlük ve dönemsel raporları görüntüleyin</p>
+        <p className="text-muted-foreground mt-1">Haftalık raporları görüntüleyin ve Excel olarak indirin</p>
       </div>
 
       <Card className="bg-card/50 backdrop-blur-md border-white/5">
