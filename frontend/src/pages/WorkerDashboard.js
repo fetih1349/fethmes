@@ -8,44 +8,58 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import Logo from '../components/Logo';
-import { LogOut, Play, Pause, StopCircle, CheckCircle } from 'lucide-react';
+import { LogOut, Play, Pause, CheckCircle } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 export default function WorkerDashboard({ user, token, onLogout }) {
-  const [tasks, setTasks] = useState([]);
   const [machines, setMachines] = useState([]);
+  const [selectedMachine, setSelectedMachine] = useState(null);
+  const [tasks, setTasks] = useState([]);
   const [workOrders, setWorkOrders] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [currentWorkLog, setCurrentWorkLog] = useState(null);
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [pauseReason, setPauseReason] = useState('');
   const [completedQuantity, setCompletedQuantity] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
+  const fetchMachines = async () => {
     try {
-      const [tasksRes, machinesRes, ordersRes] = await Promise.all([
-        axios.get(`${API_URL}/tasks/worker/${user.id}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/machines`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/work-orders`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-      setTasks(tasksRes.data);
-      setMachines(machinesRes.data);
-      setWorkOrders(ordersRes.data);
+      const response = await axios.get(`${API_URL}/machines`, { headers: { Authorization: `Bearer ${token}` } });
+      setMachines(response.data);
     } catch (error) {
-      toast.error('Veriler yüklenemedi');
+      toast.error('Makineler yüklenemedi');
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchTasksForMachine = async (machineId) => {
+    try {
+      const [tasksRes, ordersRes] = await Promise.all([
+        axios.get(`${API_URL}/tasks/worker/${user.id}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/work-orders`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      const machineTasks = tasksRes.data.filter(t => t.machine_id === machineId);
+      setTasks(machineTasks);
+      setWorkOrders(ordersRes.data);
+    } catch (error) {
+      toast.error('Görevler yüklenemedi');
+    }
+  };
+
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
-  }, [token, user.id]);
+    fetchMachines();
+  }, [token]);
+
+  useEffect(() => {
+    if (selectedMachine) {
+      fetchTasksForMachine(selectedMachine.id);
+      const interval = setInterval(() => fetchTasksForMachine(selectedMachine.id), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedMachine, token, user.id]);
 
   const handleStartPrep = async () => {
     try {
@@ -54,8 +68,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         event_type: 'prep_start'
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Ön hazırlık başlatıldı');
-      setCurrentWorkLog({ type: 'prep_start', time: new Date() });
-      fetchData();
+      fetchTasksForMachine(selectedMachine.id);
     } catch (error) {
       toast.error('Başlatılamadı');
     }
@@ -68,8 +81,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         event_type: 'prep_end'
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Ön hazırlık tamamlandı');
-      setCurrentWorkLog({ type: 'prep_end', time: new Date() });
-      fetchData();
+      fetchTasksForMachine(selectedMachine.id);
     } catch (error) {
       toast.error('Tamamlanamadı');
     }
@@ -82,8 +94,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         event_type: 'work_start'
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Üretim başlatıldı');
-      setCurrentWorkLog({ type: 'work_start', time: new Date() });
-      fetchData();
+      fetchTasksForMachine(selectedMachine.id);
     } catch (error) {
       toast.error('Başlatılamadı');
     }
@@ -103,8 +114,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       toast.success('Üretim durduruldu');
       setPauseDialogOpen(false);
       setPauseReason('');
-      setCurrentWorkLog({ type: 'work_pause', time: new Date() });
-      fetchData();
+      fetchTasksForMachine(selectedMachine.id);
     } catch (error) {
       toast.error('Durdurulamadı');
     }
@@ -117,8 +127,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         event_type: 'work_resume'
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Üretim devam ediyor');
-      setCurrentWorkLog({ type: 'work_resume', time: new Date() });
-      fetchData();
+      fetchTasksForMachine(selectedMachine.id);
     } catch (error) {
       toast.error('Devam ettirilemedi');
     }
@@ -139,21 +148,20 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       setCompleteDialogOpen(false);
       setCompletedQuantity('');
       setSelectedTask(null);
-      setCurrentWorkLog(null);
-      fetchData();
+      fetchTasksForMachine(selectedMachine.id);
     } catch (error) {
       toast.error('Tamamlanamadı');
     }
   };
 
-  const getMachineInfo = (machineId) => machines.find(m => m.id === machineId);
   const getWorkOrderInfo = (orderId) => workOrders.find(o => o.id === orderId);
 
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">Yükleniyor...</div>;
   }
 
-  if (!selectedTask) {
+  // Makine seçim ekranı
+  if (!selectedMachine) {
     return (
       <div className="min-h-screen bg-background" data-testid="worker-dashboard">
         <nav className="border-b border-border glass-card">
@@ -173,14 +181,68 @@ export default function WorkerDashboard({ user, token, onLogout }) {
 
         <main className="max-w-4xl mx-auto p-6">
           <div className="text-center mb-8">
+            <h1 className="text-5xl font-black tracking-tight mb-2">Makine Seçimi</h1>
+            <p className="text-muted-foreground text-lg">Hangi makinede çalışacaksınız?</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {machines.map((machine) => (
+              <Card 
+                key={machine.id} 
+                data-testid={`machine-option-${machine.code}`}
+                className="bg-card/50 backdrop-blur-md border-white/5 cursor-pointer hover:border-primary/50 transition-all"
+                onClick={() => setSelectedMachine(machine)}
+              >
+                <CardContent className="p-8 text-center">
+                  <h3 className="text-4xl font-black mb-2">{machine.name}</h3>
+                  <p className="text-xl font-mono text-muted-foreground mb-6">Kod: {machine.code}</p>
+                  <Button className="w-full h-16 text-xl font-bold neon-glow-primary" data-testid={`select-machine-${machine.code}`}>
+                    Bu Makineyi Seç
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // İş seçim ekranı
+  if (!selectedTask) {
+    return (
+      <div className="min-h-screen bg-background" data-testid="task-selection">
+        <nav className="border-b border-border glass-card">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <Logo size="sm" />
+              <div className="flex items-center gap-4">
+                <span className="text-lg font-mono font-bold">{user.full_name} - {selectedMachine.name}</span>
+                <Button 
+                  onClick={() => {
+                    setSelectedMachine(null);
+                    setTasks([]);
+                  }} 
+                  data-testid="change-machine-button"
+                  variant="ghost" 
+                  size="sm"
+                >
+                  Makine Değiştir
+                </Button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <main className="max-w-4xl mx-auto p-6">
+          <div className="text-center mb-8">
             <h1 className="text-5xl font-black tracking-tight mb-2">İş Seçimi</h1>
-            <p className="text-muted-foreground text-lg">Yapacak olduğunuz işi seçin</p>
+            <p className="text-muted-foreground text-lg">{selectedMachine.name} - Yapacak olduğunuz işi seçin</p>
           </div>
 
           {tasks.length > 0 ? (
             <div className="grid grid-cols-1 gap-6">
               {tasks.map((task) => {
-                const machine = getMachineInfo(task.machine_id);
                 const workOrder = getWorkOrderInfo(task.work_order_id);
                 return (
                   <Card 
@@ -196,12 +258,17 @@ export default function WorkerDashboard({ user, token, onLogout }) {
                           <p className="text-xl font-mono text-muted-foreground mb-4">{workOrder?.order_no}</p>
                           <div className="flex gap-6">
                             <div>
-                              <p className="text-sm text-muted-foreground mb-1">Makine</p>
-                              <p className="text-lg font-bold">{machine?.name}</p>
-                            </div>
-                            <div>
                               <p className="text-sm text-muted-foreground mb-1">Adet</p>
                               <p className="text-lg font-bold font-mono">{task.quantity_assigned}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-1">Durum</p>
+                              <p className="text-lg font-bold">{{
+                                assigned: 'Bekliyor',
+                                preparation: 'Ön Hazırlık',
+                                in_progress: 'Devam Ediyor',
+                                paused: 'Duraklamış'
+                              }[task.status]}</p>
                             </div>
                           </div>
                         </div>
@@ -217,8 +284,15 @@ export default function WorkerDashboard({ user, token, onLogout }) {
           ) : (
             <Card className="bg-card/50">
               <CardContent className="py-16 text-center">
-                <p className="text-2xl text-muted-foreground">Size atanmış iş bulunmuyor.</p>
-                <p className="text-lg text-muted-foreground mt-2">Ustabaşınız size bir iş atamasını bekleyin.</p>
+                <p className="text-2xl text-muted-foreground">Bu makineye atanmış iş bulunmuyor.</p>
+                <p className="text-lg text-muted-foreground mt-2">Ustabışınızın size iş atamasını bekleyin.</p>
+                <Button 
+                  onClick={() => setSelectedMachine(null)} 
+                  className="mt-6"
+                  variant="outline"
+                >
+                  Başka Makine Seç
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -227,7 +301,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
     );
   }
 
-  const machine = getMachineInfo(selectedTask.machine_id);
+  // İş kontrol paneli
   const workOrder = getWorkOrderInfo(selectedTask.work_order_id);
 
   return (
@@ -239,15 +313,12 @@ export default function WorkerDashboard({ user, token, onLogout }) {
             <div className="flex items-center gap-4">
               <span className="text-lg font-mono font-bold">{user.full_name}</span>
               <Button 
-                onClick={() => {
-                  setSelectedTask(null);
-                  setCurrentWorkLog(null);
-                }} 
-                data-testid="back-button"
+                onClick={() => setSelectedTask(null)} 
+                data-testid="back-to-tasks-button"
                 variant="ghost" 
                 size="sm"
               >
-                Geri Dön
+                İşlere Dön
               </Button>
             </div>
           </div>
@@ -265,7 +336,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Makine</p>
-                <p className="text-xl font-bold">{machine?.name}</p>
+                <p className="text-xl font-bold">{selectedMachine?.name}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Adet</p>
@@ -303,6 +374,12 @@ export default function WorkerDashboard({ user, token, onLogout }) {
           </div>
         )}
 
+        {selectedTask.status === 'preparation' && (
+          <div style={{display: 'none'}}>
+            <Button onClick={handleStartWork}>Hidden Start</Button>
+          </div>
+        )}
+
         {selectedTask.status === 'in_progress' && (
           <div className="space-y-4">
             <h3 className="text-3xl font-black">Üretim Devam Ediyor</h3>
@@ -318,7 +395,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
               <Button 
                 onClick={() => setCompleteDialogOpen(true)} 
                 data-testid="complete-work-button"
-                className="h-24 text-2xl font-bold bg-green-600 hover:bg-green-700 gap-4 neon-glow-destructive"
+                className="h-24 text-2xl font-bold bg-green-600 hover:bg-green-700 gap-4"
               >
                 <CheckCircle className="w-8 h-8" />
                 Bitir
@@ -339,22 +416,6 @@ export default function WorkerDashboard({ user, token, onLogout }) {
               Devam Et
             </Button>
           </div>
-        )}
-
-        {(selectedTask.status === 'assigned' || selectedTask.status === 'preparation') && (
-          <div />
-        )}
-
-        {selectedTask.status === 'in_progress' && (
-          <Button 
-            onClick={handleStartWork} 
-            data-testid="start-work-button"
-            className="w-full h-32 text-2xl font-bold bg-green-600 hover:bg-green-700 gap-4"
-            style={{ display: 'none' }}
-          >
-            <Play className="w-10 h-10" />
-            Üretime Başla
-          </Button>
         )}
       </main>
 
