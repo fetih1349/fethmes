@@ -169,8 +169,9 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         event_type: 'work_start'
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Üretim başlatıldı');
+      setSelectedTask({...selectedTask, status: 'in_progress'});
       setStartTime(Date.now());
-      checkActiveTask();
+      setTimeout(() => checkActiveTask(), 500);
     } catch (error) {
       toast.error('Başlatılamadı');
     }
