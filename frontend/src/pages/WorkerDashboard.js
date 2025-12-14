@@ -255,6 +255,79 @@ export default function WorkerDashboard({ user, token, onLogout }) {
     return <div className="min-h-screen bg-background flex items-center justify-center text-2xl text-muted-foreground">Yükleniyor...</div>;
   }
 
+  // İş seçim ekranı
+  if (selectedMachine && availableTasks.length > 0 && !selectedTask) {
+    return (
+      <div className="min-h-screen bg-background" data-testid="task-selection">
+        <nav className="border-b border-border glass-card">
+          <div className="max-w-5xl mx-auto px-8">
+            <div className="flex items-center justify-between h-24">
+              <Logo size="md" />
+              <div className="flex items-center gap-6">
+                <span className="text-2xl font-mono font-bold">{user.full_name} - {selectedMachine.name}</span>
+                <Button 
+                  onClick={() => {
+                    setSelectedMachine(null);
+                    setAvailableTasks([]);
+                  }} 
+                  variant="ghost" 
+                  size="lg"
+                >
+                  Makine Değiştir
+                </Button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <main className="max-w-6xl mx-auto p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-black tracking-tight mb-2">İş Seçimi</h1>
+            <p className="text-muted-foreground text-xl">{selectedMachine.name} - {availableTasks.length} iş mevcut</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {availableTasks.map((task) => {
+              const wo = Array.isArray(workOrder) ? workOrder.find(w => w.id === task.work_order_id) : null;
+              return (
+                <Card 
+                  key={task.id}
+                  data-testid={`task-card-${task.id}`}
+                  className="bg-card/50 backdrop-blur-md border-2 border-white/5 cursor-pointer hover:border-primary/50 transition-all"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setWorkOrder(wo);
+                  }}
+                >
+                  <CardContent className="p-8">
+                    <h3 className="text-3xl font-black mb-3">{wo?.part_name}</h3>
+                    <p className="text-xl font-mono text-muted-foreground mb-6">{wo?.order_no}</p>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="p-3 bg-primary/10 border border-primary/30 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Adet</p>
+                        <p className="text-2xl font-black font-mono text-primary">{task.quantity_assigned}</p>
+                      </div>
+                      <div className="p-3 bg-secondary/50 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Durum</p>
+                        <p className="text-lg font-bold">Hazır</p>
+                      </div>
+                    </div>
+                    {wo?.description && (
+                      <p className="text-sm text-muted-foreground border-t border-border pt-3">{wo.description}</p>
+                    )}
+                    <Button className="w-full h-16 text-xl font-bold neon-glow-primary mt-4">
+                      Bu İşi Al
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (!selectedTask || !selectedMachine) {
     return (
       <div className="min-h-screen bg-background" data-testid="worker-dashboard">
