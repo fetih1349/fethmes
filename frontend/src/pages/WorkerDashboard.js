@@ -191,9 +191,10 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       toast.success('Üretim durduruldu');
       setPauseDialogOpen(false);
       setPauseReason('');
+      setSelectedTask({...selectedTask, status: 'paused'});
       setStartTime(null);
       setPauseStartTime(Date.now());
-      checkActiveTask();
+      setTimeout(() => checkActiveTask(), 500);
     } catch (error) {
       toast.error('Durdurulamadı');
     }
