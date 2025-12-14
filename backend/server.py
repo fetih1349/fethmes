@@ -279,7 +279,7 @@ async def create_machine(machine_data: MachineCreate, current_user: dict = Depen
     doc = machine.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.machines.insert_one(doc)
-    return doc
+    return serialize_doc(doc)
 
 @api_router.put("/machines/{machine_id}")
 async def update_machine(machine_id: str, machine_data: MachineUpdate, current_user: dict = Depends(get_current_user)):
