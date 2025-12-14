@@ -58,6 +58,26 @@ export default function Reports({ token }) {
     }
   };
 
+  const handleFetchWorkerReport = async () => {
+    if (!selectedWorker) {
+      toast.error('Lütfen bir eleman seçin');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/reports/worker-performance?worker_id=${selectedWorker}&start_date=${selectedStartDate}&end_date=${selectedEndDate}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWorkerReport(response.data);
+      toast.success('Eleman raporu yüklendi');
+    } catch (error) {
+      toast.error('Rapor yüklenemedi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleExportExcel = () => {
     if (!reportData) {
       toast.error('Önce rapor oluşturun');
@@ -103,6 +123,44 @@ export default function Reports({ token }) {
     }
 
     XLSX.writeFile(wb, `Fethmes_Haftalik_Rapor_${selectedStartDate}_${selectedEndDate}.xlsx`);
+    toast.success('Excel dosyası indirildi');
+  };
+
+  const handleExportWorkerExcel = () => {
+    if (!workerReport) {
+      toast.error('Önce eleman raporu oluşturun');
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const { worker, summary } = workerReport;
+    
+    const summaryData = [
+      ['FETHMES - Eleman Performans Raporu', ''],
+      ['Eleman', worker.full_name],
+      ['Tarih Aralığı', `${selectedStartDate} - ${selectedEndDate}`],
+      ['', ''],
+      ['ÇALIŞMA SÜRELERİ', ''],
+      ['Ön Hazırlık', `${summary.total_prep_time_minutes} dakika`],
+      ['Üretim', `${summary.total_work_time_minutes} dakika`],
+      ['Toplam Çalışma', `${summary.total_work_time_hours} saat`],
+      ['', ''],
+      ['MOLA SÜRELERİ', 'Dakika'],
+      ['Mola', summary.pause_breakdown.break_minutes],
+      ['Arıza', summary.pause_breakdown.failure_minutes],
+      ['Ham Madde Eksikliği', summary.pause_breakdown.material_shortage_minutes],
+      ['Tuvalet', summary.pause_breakdown.toilet_minutes],
+      ['Namaz', summary.pause_breakdown.prayer_minutes],
+      ['Yemek', summary.pause_breakdown.meal_minutes],
+      ['Toplam Mola', `${summary.total_pause_time_minutes} dakika (${summary.total_pause_time_hours} saat)`],
+      ['', ''],
+      ['Toplam Üretim', `${summary.total_production} adet`]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Özet');
+
+    XLSX.writeFile(wb, `Fethmes_Eleman_Rapor_${worker.full_name}_${selectedStartDate}_${selectedEndDate}.xlsx`);
     toast.success('Excel dosyası indirildi');
   };
 
