@@ -458,7 +458,7 @@ async def create_work_log(log_data: WorkLogCreate, current_user: dict = Depends(
             {"$set": {"status": "idle", "current_task_id": None, "current_worker_id": None, "current_work_order_id": None}}
         )
     
-    return doc
+    return serialize_doc(doc)
 
 @api_router.get("/work-logs/task/{task_id}")
 async def get_task_logs(task_id: str, current_user: dict = Depends(get_current_user)):
