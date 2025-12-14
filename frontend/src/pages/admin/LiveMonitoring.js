@@ -7,6 +7,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 export default function LiveMonitoring({ token }) {
   const [machineStatus, setMachineStatus] = useState([]);
+  const [workLogs, setWorkLogs] = useState({});
   const [loading, setLoading] = useState(true);
 
   const fetchLiveStatus = async () => {
@@ -15,6 +16,21 @@ export default function LiveMonitoring({ token }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMachineStatus(response.data);
+      
+      const logsMap = {};
+      for (const item of response.data) {
+        if (item.task) {
+          try {
+            const logsRes = await axios.get(`${API_URL}/work-logs/task/${item.task.id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            logsMap[item.task.id] = logsRes.data;
+          } catch (err) {
+            console.error('Log yüklenemedi:', err);
+          }
+        }
+      }
+      setWorkLogs(logsMap);
     } catch (error) {
       console.error('Canlı durum yüklenemedi:', error);
     } finally {
