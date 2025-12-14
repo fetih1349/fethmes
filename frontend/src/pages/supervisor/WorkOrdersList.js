@@ -20,14 +20,18 @@ export default function WorkOrdersList({ token, user }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [formData, setFormData] = useState({ machine_id: '', quantity_assigned: '' });
 
+  const [tasks, setTasks] = useState([]);
+
   const fetchData = async () => {
     try {
-      const [ordersRes, machinesRes] = await Promise.all([
+      const [ordersRes, machinesRes, tasksRes] = await Promise.all([
         axios.get(`${API_URL}/work-orders`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/machines`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_URL}/machines`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/tasks`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setWorkOrders(ordersRes.data.filter(o => o.status === 'pending' || o.status === 'assigned'));
       setMachines(machinesRes.data);
+      setTasks(tasksRes.data);
     } catch (error) {
       toast.error('Veriler yüklenemedi');
     } finally {
