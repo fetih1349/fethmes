@@ -207,10 +207,11 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         event_type: 'work_resume'
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Üretim devam ediyor');
+      setSelectedTask({...selectedTask, status: 'in_progress'});
       setStartTime(Date.now());
       setPauseStartTime(null);
       setPauseElapsedTime(0);
-      checkActiveTask();
+      setTimeout(() => checkActiveTask(), 500);
     } catch (error) {
       toast.error('Devam ettirilemedi');
     }
