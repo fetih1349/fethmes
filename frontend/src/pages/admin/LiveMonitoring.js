@@ -136,23 +136,30 @@ export default function LiveMonitoring({ token }) {
                       <p className="font-mono font-bold text-sm">{item.work_order.order_no} - {item.work_order.part_name}</p>
                     )}
                   </div>
-                  {item.worker && (
-                    <div className="p-3 bg-secondary/50 border border-border rounded-md">
-                      <p className="text-xs text-muted-foreground mb-1">Operatör</p>
-                      <p className="font-semibold text-sm">{item.worker.full_name}</p>
-                    </div>
-                  )}
                   {(() => {
                     const logs = workLogs[item.task.id] || [];
                     const { phase, duration, startTime } = calculateDuration(logs, item.task);
-                    return phase && (
-                      <div className="p-3 bg-primary/10 border border-primary/30 rounded-md">
-                        <div className="flex justify-between items-center mb-1">
-                          <p className="text-xs text-muted-foreground">Durum</p>
-                          <p className="text-xs text-muted-foreground">Başlangıç: {startTime}</p>
+                    const statusColors = {
+                      'Ön Hazırlık': 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+                      'Üretim': 'bg-green-500/10 border-green-500/30 text-green-400',
+                      'Mola': 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                    };
+                    const colorClass = statusColors[phase] || 'bg-primary/10 border-primary/30 text-primary';
+                    
+                    return (
+                      <div className={`p-4 border-2 rounded-md ${colorClass}`}>
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-xs font-semibold uppercase">AŞAMA</p>
+                          {startTime && <p className="text-xs">Başlangıç: {startTime}</p>}
                         </div>
-                        <p className="font-bold text-lg text-primary">{phase}</p>
-                        <p className="font-mono font-black text-2xl text-primary mt-1">{duration}</p>
+                        <p className="font-black text-2xl mb-2">{phase || 'Bekliyor'}</p>
+                        {duration && <p className="font-mono font-black text-3xl">{duration}</p>}
+                        {item.worker && (
+                          <div className="mt-3 pt-3 border-t border-current/20">
+                            <p className="text-xs uppercase font-semibold mb-1">OPERATÖR</p>
+                            <p className="font-bold text-lg">{item.worker.full_name}</p>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
