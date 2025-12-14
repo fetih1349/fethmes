@@ -138,8 +138,9 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       });
       
       toast.success('Ön hazırlık başlatıldı');
+      setSelectedTask({...selectedTask, status: 'preparation'});
       setStartTime(Date.now());
-      checkActiveTask();
+      setTimeout(() => checkActiveTask(), 500);
     } catch (error) {
       toast.error('Başlatılamadı');
     }
