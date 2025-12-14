@@ -142,6 +142,20 @@ export default function LiveMonitoring({ token }) {
                       <p className="font-semibold text-sm">{item.worker.full_name}</p>
                     </div>
                   )}
+                  {(() => {
+                    const logs = workLogs[item.task.id] || [];
+                    const { phase, duration, startTime } = calculateDuration(logs, item.task);
+                    return phase && (
+                      <div className="p-3 bg-primary/10 border border-primary/30 rounded-md">
+                        <div className="flex justify-between items-center mb-1">
+                          <p className="text-xs text-muted-foreground">Durum</p>
+                          <p className="text-xs text-muted-foreground">Başlangıç: {startTime}</p>
+                        </div>
+                        <p className="font-bold text-lg text-primary">{phase}</p>
+                        <p className="font-mono font-black text-2xl text-primary mt-1">{duration}</p>
+                      </div>
+                    );
+                  })()}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-2 bg-accent/50 rounded">
                       <p className="text-xs text-muted-foreground">Atanan</p>
