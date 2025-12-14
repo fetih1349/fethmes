@@ -535,6 +535,41 @@ async def get_daily_report(date: str, current_user: dict = Depends(get_current_u
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@api_router.get("/reports/weekly")
+async def get_weekly_report(start_date: str, end_date: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Yetkiniz yok")
+    
+    try:
+        start = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
+        end = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, microsecond=999999)
+        
+        logs = await db.work_logs.find({
+            "timestamp": {
+                "$gte": start.isoformat(),
+                "$lte": end.isoformat()
+            }
+        }, {"_id": 0}).to_list(10000)
+        
+        total_production = sum([log.get("quantity_completed", 0) for log in logs if log.get("quantity_completed")])
+        
+        pause_logs = [log for log in logs if log["event_type"] == "work_pause"]
+        pause_reasons = {}
+        for log in pause_logs:
+            reason = log.get("pause_reason", "unknown")
+            pause_reasons[reason] = pause_reasons.get(reason, 0) + 1
+        
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+            "total_logs": len(logs),
+            "total_production": total_production,
+            "pause_reasons": pause_reasons,
+            "logs": logs
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @api_router.post("/init-data")
 async def initialize_data():
     existing_admin = await db.users.find_one({"role": "admin"})
