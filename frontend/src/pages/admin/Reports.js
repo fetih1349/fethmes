@@ -112,15 +112,24 @@ export default function Reports({ token }) {
         <CardContent className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 space-y-2">
-              <Label>Tarih Seçin</Label>
+              <Label>Başlangıç Tarihi</Label>
               <Input
-                data-testid="date-input"
+                data-testid="start-date-input"
                 type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                value={selectedStartDate}
+                onChange={(e) => setSelectedStartDate(e.target.value)}
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex-1 space-y-2">
+              <Label>Bitiş Tarihi</Label>
+              <Input
+                data-testid="end-date-input"
+                type="date"
+                value={selectedEndDate}
+                onChange={(e) => setSelectedEndDate(e.target.value)}
+              />
+            </div>
+            <div className="flex items-end gap-2">
               <Button 
                 onClick={handleFetchReport} 
                 data-testid="fetch-report-button"
@@ -129,6 +138,17 @@ export default function Reports({ token }) {
               >
                 {loading ? 'Yükleniyor...' : 'Rapor Getir'}
               </Button>
+              {reportData && (
+                <Button 
+                  onClick={handleExportExcel} 
+                  data-testid="export-excel-button"
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel İndir
+                </Button>
+              )}
             </div>
           </div>
 
