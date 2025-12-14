@@ -1,0 +1,139 @@
+{
+  "identity": {
+    "name": "Fethmes",
+    "archetype": "Industrial Control Room",
+    "vibe": "Precision, Robustness, High-Contrast, Safety-First",
+    "principles": [
+      "Fusion: Industrial Safety Signage x Sci-Fi HUD",
+      "Emotion: Trust & Control",
+      "Content: Data is the Hero",
+      "Zoom In: Focus on Machine Status",
+      "Contrast: Signal vs Noise (Neon on Dark)"
+    ]
+  },
+  "typography": {
+    "primary_font": "Manrope",
+    "heading_font": "Chivo",
+    "mono_font": "JetBrains Mono",
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-black tracking-tight",
+      "h2": "text-3xl md:text-4xl font-bold tracking-tight",
+      "h3": "text-2xl font-bold tracking-tight",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm font-medium text-muted-foreground",
+      "mono": "font-mono text-sm tracking-wide"
+    },
+    "installation": "Import from Google Fonts: Chivo (400, 700, 900), Manrope (400, 500, 700), JetBrains Mono (400, 700)"
+  },
+  "colors": {
+    "theme": "dark",
+    "palette": {
+      "background": "#09090b",
+      "foreground": "#fafafa",
+      "card": "#18181b",
+      "card_foreground": "#fafafa",
+      "popover": "#09090b",
+      "popover_foreground": "#fafafa",
+      "primary": "#f59e0b",
+      "primary_foreground": "#09090b",
+      "secondary": "#27272a",
+      "secondary_foreground": "#fafafa",
+      "muted": "#27272a",
+      "muted_foreground": "#a1a1aa",
+      "accent": "#27272a",
+      "accent_foreground": "#fafafa",
+      "destructive": "#ef4444",
+      "destructive_foreground": "#fafafa",
+      "border": "#27272a",
+      "input": "#27272a",
+      "ring": "#f59e0b"
+    },
+    "status_colors": {
+      "running": "#22c55e",
+      "stopped": "#ef4444",
+      "pause": "#eab308",
+      "idle": "#64748b"
+    },
+    "gradients": {
+      "hero_glow": "radial-gradient(circle at center, rgba(245, 158, 11, 0.15) 0%, transparent 70%)",
+      "glass_surface": "linear-gradient(180deg, rgba(24, 24, 27, 0.8) 0%, rgba(9, 9, 11, 0.9) 100%)"
+    }
+  },
+  "layout_strategies": {
+    "admin_dashboard": {
+      "grid_type": "Control Room",
+      "structure": "grid grid-cols-1 md:grid-cols-4 gap-4 p-4 md:p-6",
+      "spacing": "Compact (gap-4)",
+      "container_style": "bg-background min-h-screen text-foreground"
+    },
+    "worker_panel": {
+      "grid_type": "Touch Interface",
+      "structure": "flex flex-col gap-6 p-4 max-w-md mx-auto h-screen",
+      "spacing": "Generous (gap-6, p-6)",
+      "button_style": "h-24 text-xl font-bold shadow-lg active:scale-95 transition-transform"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(245,158,11,0.3)] rounded-md font-bold tracking-wide uppercase",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-white/10 rounded-md font-medium",
+      "destructive": "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-[0_0_15px_rgba(239,68,68,0.3)] rounded-md font-bold",
+      "ghost": "hover:bg-accent hover:text-accent-foreground rounded-md"
+    },
+    "cards": {
+      "default": "bg-card/50 backdrop-blur-md border border-white/5 rounded-lg shadow-sm hover:border-primary/20 transition-colors",
+      "interactive": "cursor-pointer hover:bg-accent/50 active:scale-[0.98] transition-all duration-200",
+      "metric": "flex flex-col p-6 gap-2 bg-card border border-border rounded-lg relative overflow-hidden"
+    },
+    "inputs": {
+      "default": "bg-input/50 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary/50 rounded-md h-10 px-3 text-sm placeholder:text-muted-foreground/50"
+    },
+    "status_indicators": {
+      "dot": "w-3 h-3 rounded-full shadow-[0_0_8px_currentColor]",
+      "badge": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-black/40 border border-white/10",
+    "neon_glow": "shadow-[0_0_20px_-5px_var(--tw-shadow-color)]",
+    "grid_background": "bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]",
+    "scanlines": "before:content-[''] before:absolute before:inset-0 before:bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] before:z-[100] before:bg-[length:100%_2px,3px_100%] before:pointer-events-none before:opacity-20"
+  },
+  "motion": {
+    "hover": "transition-all duration-200 ease-out hover:-translate-y-0.5",
+    "tap": "active:scale-95 duration-75",
+    "page_enter": "animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out",
+    "list_stagger": "stagger-children"
+  },
+  "image_urls": {
+    "login_bg": "https://images.unsplash.com/photo-1720036236697-018370867320?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "machine_lathe": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
+    "worker_avatar": "https://images.pexels.com/photos/3856118/pexels-photo-3856118.jpeg",
+    "factory_floor": "https://images.unsplash.com/photo-1720036237334-9263cd28c3d4?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "instructions_to_main_agent": {
+    "general": "You are building a high-end Industrial MES. Think 'SpaceX Control Room' meets 'Heavy Machinery'. Dark mode is mandatory for Admin/Supervisor. High contrast is mandatory for Worker.",
+    "worker_panel_rules": [
+      "NO small text. Minimum font size 16px.",
+      "NO complex navigation. Linear flows only.",
+      "Buttons must be HUGE (h-24 or h-32).",
+      "Use color to indicate state (Green=Go, Red=Stop).",
+      "Confirm destructive actions (Stop Machine) with a hold or modal."
+    ],
+    "admin_panel_rules": [
+      "Density is okay here. Use the 'Control Room' grid.",
+      "Use 'JetBrains Mono' for all numerical data and IDs.",
+      "Status indicators must be visible at a glance (glowing dots).",
+      "Use the 'grid_background' texture on the main dashboard container."
+    ],
+    "charts": "Use Recharts. Style them minimally. Remove grid lines if possible, or make them very subtle (opacity 10%). Use the status colors for data series.",
+    "auth": "Login page should use the 'login_bg' image with a heavy dark overlay (bg-black/80) to ensure text readability."
+  },
+  "universal_guidelines": [
+    "Do not use 'Inter' for headings. Use 'Chivo'.",
+    "Do not use gradients for text. It reduces readability in industrial settings.",
+    "Always add 'data-testid' to interactive elements.",
+    "Use 'sonner' for toasts.",
+    "Ensure all containers with borders have internal padding (p-4 or p-6)."
+  ]
+}
