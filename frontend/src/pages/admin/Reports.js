@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download } from 'lucide-react';
+import { Download, User } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
@@ -22,6 +23,25 @@ export default function Reports({ token }) {
   const [selectedEndDate, setSelectedEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [workers, setWorkers] = useState([]);
+  const [selectedWorker, setSelectedWorker] = useState('');
+  const [workerReport, setWorkerReport] = useState(null);
+
+  useEffect(() => {
+    fetchWorkers();
+  }, [token]);
+
+  const fetchWorkers = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/users`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const workersList = response.data.filter(u => u.role === 'worker');
+      setWorkers(workersList);
+    } catch (error) {
+      console.error('Elemanlar yüklenemedi:', error);
+    }
+  };
 
   const handleFetchReport = async () => {
     setLoading(true);
