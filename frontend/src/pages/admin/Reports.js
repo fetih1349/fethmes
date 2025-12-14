@@ -107,7 +107,7 @@ export default function Reports({ token }) {
 
       <Card className="bg-card/50 backdrop-blur-md border-white/5">
         <CardHeader>
-          <CardTitle>Günlük Rapor</CardTitle>
+          <CardTitle>Haftalık Rapor</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-4">
