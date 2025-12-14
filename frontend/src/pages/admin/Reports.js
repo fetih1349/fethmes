@@ -210,7 +210,7 @@ export default function Reports({ token }) {
 
           {!reportData && (
             <div className="text-center py-12 text-muted-foreground">
-              Tarih seçip "Rapor Getir" butonuna tıklayarak rapor oluşturabilirsiniz.
+              Tarih aralığı seçip &quot;Rapor Getir&quot; butonuna tıklayarak haftalık rapor oluşturabilirsiniz.
             </div>
           )}
         </CardContent>
