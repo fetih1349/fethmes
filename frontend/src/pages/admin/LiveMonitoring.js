@@ -65,6 +65,34 @@ export default function LiveMonitoring({ token }) {
     return classes[status] || classes.idle;
   };
 
+  const calculateDuration = (logs, task) => {
+    if (!logs || logs.length === 0) return { phase: '', duration: '0:00' };
+    
+    const lastLog = logs[logs.length - 1];
+    const startLog = logs.find(l => 
+      l.event_type === 'prep_start' || l.event_type === 'work_start' || l.event_type === 'work_resume'
+    );
+    
+    if (!startLog) return { phase: '', duration: '0:00' };
+    
+    const start = new Date(startLog.timestamp);
+    const now = new Date();
+    const diffMs = now - start;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffSecs = Math.floor((diffMs % 60000) / 1000);
+    
+    let phase = '';
+    if (task.status === 'preparation') phase = 'Ön Hazırlık';
+    else if (task.status === 'in_progress') phase = 'Üretim';
+    else if (task.status === 'paused') phase = 'Mola';
+    
+    return { 
+      phase, 
+      duration: `${diffMins}:${diffSecs.toString().padStart(2, '0')}`,
+      startTime: start.toLocaleTimeString('tr-TR')
+    };
+  };
+
   if (loading) {
     return <div className="text-center py-12 text-muted-foreground">Yükleniyor...</div>;
   }
