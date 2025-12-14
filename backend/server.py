@@ -321,7 +321,7 @@ async def create_work_order(order_data: WorkOrderCreate, current_user: dict = De
     doc = work_order.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.work_orders.insert_one(doc)
-    return doc
+    return serialize_doc(doc)
 
 @api_router.delete("/work-orders/{order_id}")
 async def delete_work_order(order_id: str, current_user: dict = Depends(get_current_user)):
