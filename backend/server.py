@@ -358,7 +358,7 @@ async def create_task(task_data: TaskCreate, current_user: dict = Depends(get_cu
     
     await db.work_orders.update_one({"id": task_data.work_order_id}, {"$set": {"status": "assigned"}})
     
-    return doc
+    return serialize_doc(doc)
 
 @api_router.put("/tasks/{task_id}/assign-worker")
 async def assign_worker_to_task(task_id: str, worker_id: str, current_user: dict = Depends(get_current_user)):
