@@ -124,9 +124,10 @@ export default function TaskManagement({ token, user }) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="p-3 bg-secondary/50 border border-border rounded-md">
+                <div className="p-3 bg-primary/10 border border-primary/30 rounded-md">
                   <p className="text-xs text-muted-foreground mb-1">Makine</p>
-                  <p className="font-semibold text-sm">{machine?.name} ({machine?.code})</p>
+                  <p className="font-bold text-lg text-primary">{machine?.name}</p>
+                  <p className="font-mono text-sm text-muted-foreground mt-1">Kod: {machine?.code}</p>
                 </div>
                 <div className="p-3 bg-accent/50 border border-border rounded-md">
                   <p className="text-xs text-muted-foreground mb-1">Eleman</p>
