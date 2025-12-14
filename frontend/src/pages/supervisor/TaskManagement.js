@@ -159,31 +159,7 @@ export default function TaskManagement({ token, user }) {
         </Card>
       )}
 
-      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle>Eleman Ata</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Eleman Seç</Label>
-              <Select value={selectedWorker} onValueChange={setSelectedWorker}>
-                <SelectTrigger data-testid="worker-select">
-                  <SelectValue placeholder="Eleman seçin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {workers.map((worker) => (
-                    <SelectItem key={worker.id} value={worker.id}>
-                      {worker.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={handleAssignWorker} data-testid="submit-worker-button" className="w-full">Ata</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Eleman ataması artık gerekli değil - eleman kendisi makineyi seçip işi alır */}
     </div>
   );
 }
