@@ -176,12 +176,166 @@ export default function Reports({ token }) {
     value
   })) : [];
 
+  const pauseLabels = {
+    break: 'Mola',
+    failure: 'Arıza',
+    material_shortage: 'Ham Madde Eksikliği',
+    toilet: 'Tuvalet',
+    prayer: 'Namaz',
+    meal: 'Yemek'
+  };
+
   return (
     <div className="space-y-6" data-testid="reports-page">
       <div>
         <h1 className="text-4xl font-black tracking-tight">Raporlar</h1>
-        <p className="text-muted-foreground mt-1">Haftalık raporları görüntüleyin ve Excel olarak indirin</p>
+        <p className="text-muted-foreground mt-1">Genel ve kişisel raporları görüntüleyin</p>
       </div>
+
+      {/* Eleman Performans Raporu */}
+      <Card className="bg-card/50 backdrop-blur-md border-white/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            Eleman Performans Raporu
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Eleman Seç</Label>
+              <Select value={selectedWorker} onValueChange={setSelectedWorker}>
+                <SelectTrigger data-testid="worker-select">
+                  <SelectValue placeholder="Eleman seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workers.map((worker) => (
+                    <SelectItem key={worker.id} value={worker.id}>
+                      {worker.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Başlangıç Tarihi</Label>
+              <Input
+                type="date"
+                value={selectedStartDate}
+                onChange={(e) => setSelectedStartDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Bitiş Tarihi</Label>
+              <Input
+                type="date"
+                value={selectedEndDate}
+                onChange={(e) => setSelectedEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleFetchWorkerReport} 
+              data-testid="fetch-worker-report-button"
+              disabled={loading}
+              className="neon-glow-primary"
+            >
+              {loading ? 'Yükleniyor...' : 'Eleman Raporu Getir'}
+            </Button>
+            {workerReport && (
+              <Button 
+                onClick={handleExportWorkerExcel} 
+                data-testid="export-worker-excel-button"
+                variant="outline"
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Excel İndir
+              </Button>
+            )}
+          </div>
+
+          {workerReport && (
+            <div className="space-y-6 pt-6 border-t border-border">
+              <div className="text-center">
+                <h3 className="text-2xl font-black">{workerReport.worker.full_name}</h3>
+                <p className="text-muted-foreground">{selectedStartDate} - {selectedEndDate}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-primary/10 border-primary/30">
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground mb-1">Toplam Çalışma</p>
+                    <p className="text-4xl font-black font-mono text-primary">{workerReport.summary.total_work_time_hours} sa</p>
+                    <p className="text-xs text-muted-foreground mt-1">({workerReport.summary.total_work_time_minutes} dk)</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-yellow-500/10 border-yellow-500/30">
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground mb-1">Toplam Mola</p>
+                    <p className="text-4xl font-black font-mono text-yellow-400">{workerReport.summary.total_pause_time_hours} sa</p>
+                    <p className="text-xs text-muted-foreground mt-1">({workerReport.summary.total_pause_time_minutes} dk)</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-green-500/10 border-green-500/30">
+                  <CardContent className="pt-6">
+                    <p className="text-sm text-muted-foreground mb-1">Toplam Üretim</p>
+                    <p className="text-4xl font-black font-mono text-green-400">{workerReport.summary.total_production} adet</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-card/50 backdrop-blur-md border-white/5">
+                <CardHeader>
+                  <CardTitle>Mola Dağılımı</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Object.entries(workerReport.summary.pause_breakdown).map(([key, value]) => {
+                      const label = pauseLabels[key.replace('_minutes', '')];
+                      if (!label || value === 0) return null;
+                      return (
+                        <div key={key} className="flex items-center justify-between p-3 bg-accent/50 rounded-md">
+                          <span className="font-semibold">{label}</span>
+                          <div className="text-right">
+                            <span className="font-mono font-bold text-lg">{value} dk</span>
+                            <span className="text-xs text-muted-foreground ml-2">({(value / 60).toFixed(2)} sa)</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur-md border-white/5">
+                <CardHeader>
+                  <CardTitle>Çalışma Detayı</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-blue-500/10 border border-blue-500/30 rounded-md">
+                      <span className="font-semibold">Ön Hazırlık</span>
+                      <span className="font-mono font-bold text-lg text-blue-400">{workerReport.summary.total_prep_time_minutes} dk</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-md">
+                      <span className="font-semibold">Üretim</span>
+                      <span className="font-mono font-bold text-lg text-green-400">{workerReport.summary.total_work_time_minutes} dk</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {!workerReport && (
+            <div className="text-center py-12 text-muted-foreground">
+              Eleman seçip "Eleman Raporu Getir" butonuna tıklayarak rapor oluşturabilirsiniz.
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="bg-card/50 backdrop-blur-md border-white/5">
         <CardHeader>
