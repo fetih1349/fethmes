@@ -418,6 +418,10 @@ async def create_work_log(log_data: WorkLogCreate, current_user: dict = Depends(
             {"id": task["machine_id"]},
             {"$set": {"status": "running", "current_task_id": log_data.task_id, "current_worker_id": current_user["id"], "current_work_order_id": task["work_order_id"]}}
         )
+    elif log_data.event_type == "prep_end":
+        await db.tasks.update_one({"id": log_data.task_id}, {"$set": {"status": "in_progress"}})
+        await db.work_orders.update_one({"id": task["work_order_id"]}, {"$set": {"status": "in_progress"}})
+        await db.machines.update_one({"id": task["machine_id"]}, {"$set": {"status": "running"}})
     elif log_data.event_type == "work_start":
         await db.tasks.update_one({"id": log_data.task_id}, {"$set": {"status": "in_progress"}})
         await db.work_orders.update_one({"id": task["work_order_id"]}, {"$set": {"status": "in_progress"}})
