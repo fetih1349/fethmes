@@ -360,16 +360,13 @@ async def create_task(task_data: TaskCreate, current_user: dict = Depends(get_cu
     
     return serialize_doc(doc)
 
-@api_router.put("/tasks/{task_id}/assign-worker")
-async def assign_worker_to_task(task_id: str, worker_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["admin", "supervisor"]:
-        raise HTTPException(status_code=403, detail="Yetkiniz yok")
-    
-    result = await db.tasks.update_one({"id": task_id}, {"$set": {"assigned_worker_id": worker_id}})
+@api_router.put("/tasks/{task_id}/claim-worker")
+async def claim_worker_to_task(task_id: str, worker_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.tasks.update_one({"id": task_id}, {"$set": {"current_worker_id": worker_id}})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Görev bulunamadı")
     
-    return {"message": "Eleman atandı"}
+    return {"message": "İş alındı"}
 
 @api_router.delete("/tasks/{task_id}")
 async def delete_task(task_id: str, current_user: dict = Depends(get_current_user)):
