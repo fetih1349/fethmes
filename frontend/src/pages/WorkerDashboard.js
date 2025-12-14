@@ -309,8 +309,15 @@ export default function WorkerDashboard({ user, token, onLogout }) {
     paused: 'Durakladı'
   };
 
+  const bgColors = {
+    assigned: 'bg-background',
+    preparation: 'bg-gradient-to-br from-yellow-950/30 to-yellow-900/20',
+    in_progress: 'bg-gradient-to-br from-green-950/30 to-green-900/20',
+    paused: 'bg-gradient-to-br from-red-950/30 to-red-900/20'
+  };
+
   return (
-    <div className="min-h-screen bg-background" data-testid="work-control-panel">
+    <div className={`min-h-screen transition-all duration-500 ${bgColors[selectedTask.status]}`} data-testid="work-control-panel">
       <nav className="border-b border-border glass-card">
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex items-center justify-between h-24">
