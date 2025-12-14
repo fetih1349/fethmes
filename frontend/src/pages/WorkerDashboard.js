@@ -91,11 +91,13 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       ]);
       
       const machineTasks = tasksRes.data.filter(t => 
-        t.machine_id === machine.id && t.status === 'assigned'
+        t.machine_id === machine.id && 
+        t.assigned_worker_id === user.id && 
+        t.status === 'assigned'
       );
       
       if (machineTasks.length === 0) {
-        toast.error('Bu makineye atanmış işiniz yok');
+        toast.error('Bu makineye atanmış işiniz yok. Ustabası size iş atamalı.');
         return;
       }
       
