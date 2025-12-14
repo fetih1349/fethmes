@@ -23,7 +23,9 @@ export default function WorkerDashboard({ user, token, onLogout }) {
   const [completedQuantity, setCompletedQuantity] = useState('');
   const [loading, setLoading] = useState(true);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [pauseElapsedTime, setPauseElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState(null);
+  const [pauseStartTime, setPauseStartTime] = useState(null);
 
   useEffect(() => {
     checkActiveTask();
@@ -38,13 +40,22 @@ export default function WorkerDashboard({ user, token, onLogout }) {
     }
   }, [selectedTask, startTime]);
 
+  useEffect(() => {
+    if (selectedTask && selectedTask.status === 'paused' && pauseStartTime) {
+      const interval = setInterval(() => {
+        setPauseElapsedTime(Math.floor((Date.now() - pauseStartTime) / 1000));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedTask, pauseStartTime]);
+
   const checkActiveTask = async () => {
     try {
       const response = await axios.get(`${API_URL}/tasks/worker/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const activeTasks = response.data.filter(t => 
-        t.assigned_worker_id === user.id &&
+        t.current_worker_id === user.id &&
         (t.status === 'preparation' || t.status === 'in_progress' || t.status === 'paused')
       );
       
@@ -66,9 +77,11 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         const logs = logsRes.data;
         if (logs.length > 0) {
           const lastLog = logs[logs.length - 1];
-          if (lastLog.event_type === 'prep_start' || lastLog.event_type === 'prep_end' || 
-              lastLog.event_type === 'work_start' || lastLog.event_type === 'work_resume') {
+          if (lastLog.event_type === 'prep_start' || lastLog.event_type === 'work_start' || lastLog.event_type === 'work_resume') {
             setStartTime(new Date(lastLog.timestamp).getTime());
+          }
+          if (lastLog.event_type === 'work_pause') {
+            setPauseStartTime(new Date(lastLog.timestamp).getTime());
           }
         }
       } else {
@@ -87,18 +100,18 @@ export default function WorkerDashboard({ user, token, onLogout }) {
   const handleSelectMachine = async (machine) => {
     try {
       const [tasksRes, ordersRes] = await Promise.all([
-        axios.get(`${API_URL}/tasks/worker/${user.id}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/tasks`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/work-orders`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       const machineTasks = tasksRes.data.filter(t => 
         t.machine_id === machine.id && 
-        t.assigned_worker_id === user.id && 
-        t.status === 'assigned'
+        t.status === 'assigned' &&
+        !t.current_worker_id
       );
       
       if (machineTasks.length === 0) {
-        toast.error('Bu makineye atanmış işiniz yok. Ustabası size iş atamalı.');
+        toast.error('Bu makinede boş iş yok');
         return;
       }
       
@@ -119,6 +132,11 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         task_id: selectedTask.id,
         event_type: 'prep_start'
       }, { headers: { Authorization: `Bearer ${token}` } });
+      
+      await axios.put(`${API_URL}/tasks/${selectedTask.id}/claim-worker?worker_id=${user.id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       toast.success('Ön hazırlık başlatıldı');
       setStartTime(Date.now());
       checkActiveTask();
@@ -171,6 +189,7 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       setPauseDialogOpen(false);
       setPauseReason('');
       setStartTime(null);
+      setPauseStartTime(Date.now());
       checkActiveTask();
     } catch (error) {
       toast.error('Durdurulamadı');
@@ -185,6 +204,8 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Üretim devam ediyor');
       setStartTime(Date.now());
+      setPauseStartTime(null);
+      setPauseElapsedTime(0);
       checkActiveTask();
     } catch (error) {
       toast.error('Devam ettirilemedi');
@@ -209,7 +230,9 @@ export default function WorkerDashboard({ user, token, onLogout }) {
       setSelectedMachine(null);
       setWorkOrder(null);
       setElapsedTime(0);
+      setPauseElapsedTime(0);
       setStartTime(null);
+      setPauseStartTime(null);
       checkActiveTask();
     } catch (error) {
       toast.error('Tamamlanamadı');
@@ -323,12 +346,21 @@ export default function WorkerDashboard({ user, token, onLogout }) {
             <p className="text-4xl font-black text-primary">{statusLabels[selectedTask.status]}</p>
           </div>
 
-          {(selectedTask.status !== 'assigned') && (
+          {(selectedTask.status === 'preparation' || selectedTask.status === 'in_progress') && (
             <div className="inline-block">
               <div className="text-8xl font-mono font-black text-primary" data-testid="elapsed-timer">
                 {formatTime(elapsedTime)}
               </div>
               <p className="text-xl text-muted-foreground mt-2">Geçen Süre</p>
+            </div>
+          )}
+
+          {selectedTask.status === 'paused' && (
+            <div className="inline-block">
+              <div className="text-8xl font-mono font-black text-yellow-500" data-testid="pause-timer">
+                {formatTime(pauseElapsedTime)}
+              </div>
+              <p className="text-xl text-yellow-500 mt-2">Mola Süresi</p>
             </div>
           )}
         </div>
