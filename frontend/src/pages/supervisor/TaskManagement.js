@@ -144,19 +144,6 @@ export default function TaskManagement({ token, user }) {
                   <span className="text-sm text-muted-foreground">Adet:</span>
                   <span className="font-mono font-bold">{task.quantity_assigned}</span>
                 </div>
-                {!task.assigned_worker_id && task.status === 'assigned' && (
-                  <Button 
-                    className="w-full gap-2" 
-                    data-testid={`assign-worker-${task.id}`}
-                    onClick={() => {
-                      setSelectedTask(task);
-                      setAssignDialogOpen(true);
-                    }}
-                  >
-                    <User className="w-4 h-4" />
-                    Eleman Ata
-                  </Button>
-                )}
               </CardContent>
             </Card>
           );
