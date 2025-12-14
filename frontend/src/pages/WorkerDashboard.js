@@ -44,7 +44,8 @@ export default function WorkerDashboard({ user, token, onLogout }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const activeTasks = response.data.filter(t => 
-        t.status === 'preparation' || t.status === 'in_progress' || t.status === 'paused'
+        t.assigned_worker_id === user.id &&
+        (t.status === 'preparation' || t.status === 'in_progress' || t.status === 'paused')
       );
       
       if (activeTasks.length > 0) {
